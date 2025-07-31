@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/itpark/market/auth/internal/presentation/http/jwt"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 	"log/slog"
 )
@@ -21,13 +22,13 @@ func (a *Auth) Login(
 	ctx context.Context,
 	email string,
 	password string, // пароль в чистом виде, аккуратней с логами!
-	appID int, // ID приложения, в котором логинится пользователь
+	appID int,       // ID приложения, в котором логинится пользователь
 ) (string, error) {
 	const op = "Auth.Login"
 
 	log := a.log.With(
-		slog.String("op", op),
-		slog.String("username", email),
+		zap.String("op", op),
+		zap.String("username", email),
 		// password либо не логируем, либо логируем в замаскированном виде
 	)
 

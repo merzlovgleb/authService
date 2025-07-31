@@ -36,7 +36,9 @@ func (repo *UserRepository) GetAllUsers(ctx *gin.Context) []domain.User {
 	var users []domain.User
 	err := repo.DbConnection.DB.SelectContext(ctx, &users, "SELECT id, title from dco.users")
 	if err != nil {
-		logging.Error(err.Error())
+		logging.Error(nil, err.Error())
+		//panic(err)
+		return nil
 	}
 	return users
 }

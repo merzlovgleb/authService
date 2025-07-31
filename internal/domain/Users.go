@@ -8,14 +8,16 @@ type User struct {
 	Password string    `json:"password" db:"password"`
 	Name     string    `json:"name" db:"name"`
 	Surname  string    `json:"surname" db:"surname"`
+	Role     string    `json:"role" db:"role"`
 }
 
-func NewUser(id uuid.UUID, email string, password string, name string, surname string) User {
+func NewUser(id uuid.UUID, email string, password string, name string, surname string, role string) User {
 	return User{
 		ID:       id,
 		Email:    email,
 		Password: password,
 		Name:     name,
 		Surname:  surname,
+		Role:     role,
 	}
 }

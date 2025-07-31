@@ -8,12 +8,12 @@ import (
 	"github.com/itpark/market/auth/internal/domain"
 )
 
-type TokenPair struct {
+type JwtTokenPair struct {
 	AccessToken  string
 	RefreshToken string
 }
 
-func GenerateTokenPair(user domain.User, appID uuid.UUID, secret string) (*TokenPair, error) {
+func GenerateTokenPair(user domain.User, appID uuid.UUID, secret string) (*JwtTokenPair, error) {
 	accessToken, err := generateToken(user, appID, secret, 15*time.Minute, "access")
 	if err != nil {
 		return nil, err
@@ -24,7 +24,7 @@ func GenerateTokenPair(user domain.User, appID uuid.UUID, secret string) (*Token
 		return nil, err
 	}
 
-	return &TokenPair{
+	return &JwtTokenPair{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil
