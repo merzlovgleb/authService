@@ -18,8 +18,19 @@ func NewUserService(repository *repository.UserRepository) *UserService {
 	}
 }
 
-func (userService *UserService) CreateUser(ctx context.Context, userDto dto.CreateUserDto) {
-	userService.Repository.CreateUser(ctx, userDto.Name, userDto.Email, userDto.Password)
+func (userService *UserService) CreateUser(ctx context.Context, userDto *dto.CreateUserDto) error {
+	user := &domain.User{
+		Name:      userDto.Name,
+		Email:     userDto.Email,
+		Password:  userDto.Password, //захэшировать надо бы
+		Surname:   userDto.Surname,
+		Role:      userDto.Role,
+		CreatedAt: userDto.CreatedAt,
+		IsActive:  userDto.IsActive,
+	}
+
+	_, err := userService.Repository.CreateUser(ctx, user)
+	return err
 }
 
 func (userService *UserService) GetAllUsers(ctx *gin.Context) []domain.User {
