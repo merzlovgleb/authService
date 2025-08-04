@@ -20,7 +20,7 @@ var (
 	ErrMinLengthPswd      = errors.New("password length must be between 6 and 128 characters")
 )
 
-var _ AuthUseCase = (*auth)(nil)
+var _ AuthUseCase = (*Auth)(nil)
 
 type AuthUseCase interface {
 	Register(email string, password string, name string, surname string) (userId string, err error)
@@ -29,21 +29,21 @@ type AuthUseCase interface {
 	ValidateToken(accessToken string) (valid bool, err error)
 	Logout(accessToken string) (err error)
 }
-type auth struct {
+type Auth struct {
 	userRepo     repository.UserRepository
 	blacklist    repository.BlackListRepository
 	tokenService token.JWTToken
 }
 
 func NewAuthUseCase(userRepo repository.UserRepository, blacklist repository.BlackListRepository, tokenSvc token.JWTToken) AuthUseCase {
-	return &auth{
+	return &Auth{
 		userRepo:     userRepo,
 		blacklist:    blacklist,
 		tokenService: tokenSvc,
 	}
 }
 
-func (uc *auth) Register(email, password, name, surname string) (string, error) {
+func (uc *Auth) Register(email, password, name, surname string) (string, error) {
 	if len(password) < 6 || len(password) > 128 {
 		return "", ErrMinLengthPswd
 	}
@@ -77,7 +77,7 @@ func (uc *auth) Register(email, password, name, surname string) (string, error) 
 	return newUser.ID.String(), nil
 }
 
-func (uc *auth) Login(email string, password string) (string, string, error) {
+func (uc *Auth) Login(email string, password string) (string, string, error) {
 	curUser, err := uc.userRepo.GetUserByEmail(context.Background(), email)
 	if err != nil || curUser == nil {
 		return "", "", ErrInvalidCredentials
@@ -102,7 +102,7 @@ func (uc *auth) Login(email string, password string) (string, string, error) {
 	return accesToken, refreshToken, nil
 }
 
-func (uc *auth) RefreshToken(refreshToken string) (string, error) {
+func (uc *Auth) RefreshToken(refreshToken string) (string, error) {
 	isValid, err := uc.checkToken(refreshToken)
 	if !isValid || err != nil {
 		return "", fmt.Errorf("invalid refresh token: %w", err)
@@ -115,11 +115,11 @@ func (uc *auth) RefreshToken(refreshToken string) (string, error) {
 	return newAccessToken, nil
 }
 
-func (uc *auth) ValidateToken(accessToken string) (bool, error) {
+func (uc *Auth) ValidateToken(accessToken string) (bool, error) {
 	return uc.checkToken(accessToken)
 }
 
-func (uc *auth) checkToken(token string) (bool, error) {
+func (uc *Auth) checkToken(token string) (bool, error) {
 
 	isBlacklisted, err := uc.blacklist.IsTokenBlacklisted(context.Background(), token)
 	if err != nil {
@@ -136,7 +136,7 @@ func (uc *auth) checkToken(token string) (bool, error) {
 	return isValid, nil
 }
 
-func (uc *auth) Logout(accessToken string) error {
+func (uc *Auth) Logout(accessToken string) error {
 	err := uc.blacklist.AddToBlacklist(context.Background(), accessToken)
 	if err != nil {
 		return fmt.Errorf("failed to add token to blacklist: %w", err)
