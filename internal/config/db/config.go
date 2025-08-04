@@ -3,8 +3,8 @@ package db
 import (
 	"context"
 	"fmt"
-	"github.com/itpark/market/dco/internal/config"
-	"github.com/itpark/market/dco/internal/telemetry/logging"
+	"github.com/itpark/market/auth/internal/config"
+	"github.com/itpark/market/auth/internal/telemetry/logging"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
