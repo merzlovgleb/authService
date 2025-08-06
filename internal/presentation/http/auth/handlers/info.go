@@ -7,7 +7,7 @@ import (
 	"github.com/itpark/market/auth/internal/app/utils"
 )
 
-func MyHandler(c *gin.Context) {
+func UserInfoHandler(c *gin.Context) {
 	clientIDVal, exists := c.Get(utils.GinContextClientIDKey)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})

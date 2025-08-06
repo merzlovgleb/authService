@@ -16,5 +16,5 @@ func (r *AuthRouter) RegisterRoutes(rg *gin.RouterGroup) {
 	auth := rg.Group("/auth")
 	auth.Use(utils.JWTMiddleware())
 
-	auth.GET("/my", handlers.MyHandler)
+	auth.GET("/info", handlers.UserInfoHandler)
 }
