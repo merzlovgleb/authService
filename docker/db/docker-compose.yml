@@ -27,7 +27,7 @@ services:
       - GOOSE_DRIVER=postgres
       - GOOSE_DBSTRING=host=postgres port=5432 user=dco_user password=dco_password dbname=dco_db sslmode=disable
     volumes:
-      - ../../migrations:/migrations
+        - /c/Users/Honor/GolandProjects/authService/migrations:/migrations
     depends_on:
       postgres:
         condition: service_healthy
