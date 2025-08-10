@@ -3,7 +3,6 @@ package http
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/itpark/market/auth/internal/config/db"
-
 	authRouter "github.com/itpark/market/auth/internal/presentation/http/auth/router"
 	groupRouter "github.com/itpark/market/auth/internal/presentation/http/group/router"
 )
@@ -16,7 +15,7 @@ func RegisterRoutes(engine *gin.Engine, db *db.DbConnection) *gin.Engine {
 	group := groupRouter.NewGroupRouter(db)
 	group.RegisterRoutes(api)
 
-	auth := authRouter.NewAuthRouter()
+	auth := authRouter.NewAuthRouter(db)
 	auth.RegisterRoutes(api)
 
 	return engine

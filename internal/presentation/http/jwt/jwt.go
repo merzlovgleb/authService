@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-var _ JWTToken = (*jwtToken)(nil)
+var _ JWTToken = (*JwtTokenService)(nil)
 
 var (
 	ErrMissingSecret       = errors.New("missing JWT_SECRET in config")
@@ -24,33 +24,33 @@ type JWTToken interface {
 	RefreshAccessToken(refreshToken string) (string, error)
 }
 
-type jwtToken struct {
+type JwtTokenService struct {
 	secret     string
 	accessTTL  time.Duration
 	refreshTTL time.Duration
 }
 
-func New(secret string, accessTTL, refreshTTL time.Duration) (JWTToken, error) {
+func New(secret string, accessTTL, refreshTTL time.Duration) (*JwtTokenService, error) {
 	if secret == "" {
 		return nil, ErrMissingSecret
 	}
-	return &jwtToken{
+	return &JwtTokenService{
 		secret:     secret,
 		accessTTL:  accessTTL,
 		refreshTTL: refreshTTL,
 	}, nil
 }
 
-func (s *jwtToken) GenerateAccessToken(user *domain.User) (string, error) {
+func (s *JwtTokenService) GenerateAccessToken(user *domain.User) (string, error) {
 	return s.generateToken(user.ID.String(), s.accessTTL)
 }
 
-func (s *jwtToken) GenerateRefreshToken(user *domain.User) (string, error) {
+func (s *JwtTokenService) GenerateRefreshToken(user *domain.User) (string, error) {
 	return s.generateToken(user.ID.String(), s.refreshTTL)
 }
 
-func (s *jwtToken) ValidateToken(token string) (bool, error) {
-	claims, err := s.parseToken(token)
+func (s *JwtTokenService) ValidateToken(token string) (bool, error) {
+	claims, err := s.ParseToken(token)
 	if err != nil {
 		return false, err
 	}
@@ -62,8 +62,8 @@ func (s *jwtToken) ValidateToken(token string) (bool, error) {
 	return true, nil
 }
 
-func (s *jwtToken) RefreshAccessToken(refreshToken string) (string, error) {
-	claims, err := s.parseToken(refreshToken)
+func (s *JwtTokenService) RefreshAccessToken(refreshToken string) (string, error) {
+	claims, err := s.ParseToken(refreshToken)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse refresh token: %w", err)
 	}
@@ -75,7 +75,7 @@ func (s *jwtToken) RefreshAccessToken(refreshToken string) (string, error) {
 	return s.generateToken(claims.Subject, s.accessTTL)
 }
 
-func (s *jwtToken) generateToken(userID string, ttl time.Duration) (string, error) {
+func (s *JwtTokenService) generateToken(userID string, ttl time.Duration) (string, error) {
 	claims := &jwt.RegisteredClaims{
 		Issuer:    userID,
 		Subject:   userID,
@@ -85,7 +85,7 @@ func (s *jwtToken) generateToken(userID string, ttl time.Duration) (string, erro
 	return token.SignedString([]byte(s.secret))
 }
 
-func (s *jwtToken) parseToken(tokenString string) (*jwt.RegisteredClaims, error) {
+func (s *JwtTokenService) ParseToken(tokenString string) (*jwt.RegisteredClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, func(t *jwt.Token) (interface{}, error) {
 		return []byte(s.secret), nil
 	})
