@@ -9,7 +9,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.3
 	github.com/google/uuid v1.6.0
 	github.com/jmoiron/sqlx v1.3.5
-	github.com/lib/pq v1.2.0
+	github.com/lib/pq v1.10.9
 	github.com/spf13/viper v1.20.1
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.40.0
