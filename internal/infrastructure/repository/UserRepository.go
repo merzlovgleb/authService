@@ -2,12 +2,10 @@ package repository
 
 import (
 	"context"
-	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+	"database/sql"
+
 	"github.com/itpark/market/auth/internal/config/db"
 	"github.com/itpark/market/auth/internal/domain"
-	"github.com/itpark/market/auth/internal/telemetry/logging"
 )
 
 type UserRepository struct {
@@ -15,55 +13,182 @@ type UserRepository struct {
 }
 
 func NewUserRepository(dbConnection *db.DbConnection) *UserRepository {
-	return &UserRepository{
-		DbConnection: dbConnection,
-	}
+	return &UserRepository{DbConnection: dbConnection}
 }
 
-func (repo *UserRepository) CreateUser(ctx context.Context, user *domain.User) (uuid.UUID, error) {
+func (repo *UserRepository) CreateUser(ctx context.Context, user *domain.User) (*domain.User, error) {
 	query := `
-		INSERT INTO dco.users (id,email,password,name,surname) VALUES ($1,$2,$3,$4)`
+		INSERT INTO dco.users (user_id, email, password, name, surname, role, created_at, is_active)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
 
-	res, err := repo.DbConnection.DB.ExecContext(ctx, query, user.ID, user.Email, user.Password, user.Name, user.Surname)
+	_, err := repo.DbConnection.DB.ExecContext(
+		ctx,
+		query,
+		user.ID,
+		user.Email,
+		[]byte(user.Password),
+		user.Name,
+		user.Surname,
+		user.Role,
+		user.CreatedAt,
+		user.IsActive,
+	)
 	if err != nil {
-		logging.Error(err.Error())
+		return nil, err
 	}
-	rowsAffected, _ := res.RowsAffected()
-	logging.Debug(fmt.Sprintf("Created %d rows", rowsAffected))
-	return user.ID, nil
+
+	return user, nil
 }
 
 func (repo *UserRepository) GetAllUsers(ctx context.Context) []domain.User {
 	var users []domain.User
-	err := repo.DbConnection.DB.SelectContext(ctx, &users, "SELECT id, title from dco.users")
+	err := repo.DbConnection.DB.SelectContext(ctx, &users, `
+		SELECT
+			user_id AS id,
+			email,
+			name,
+			surname,
+			role,
+			created_at,
+			is_active
+		FROM dco.users`)
 	if err != nil {
-		logging.Error(nil, err.Error())
-		//panic(err)
 		return nil
 	}
 	return users
 }
+
 func (repo *UserRepository) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
-	query := `SELECT id, email, password, is_active FROM users WHERE email = $1`
-	row := repo.DbConnection.DB.QueryRowContext(ctx, query, email)
+	query := `
+		SELECT
+			user_id AS id,
+			email,
+			password,
+			name,
+			surname,
+			role,
+			created_at,
+			is_active
+		FROM dco.users
+		WHERE email = $1`
 
 	var user domain.User
-
-	err := row.Scan(&user.ID, &user.Email, &user.Password, &user.IsActive)
+	err := repo.DbConnection.DB.QueryRowContext(ctx, query, email).Scan(
+		&user.ID,
+		&user.Email,
+		&user.Password,
+		&user.Name,
+		&user.Surname,
+		&user.Role,
+		&user.CreatedAt,
+		&user.IsActive,
+	)
 	if err != nil {
 		return nil, err
 	}
 	return &user, nil
 }
 
-func (repo *UserRepository) GetUserById(ctx *gin.Context, id string) (*domain.User, error) {
-	query := `SELECT id, email, password, is_active FROM users WHERE id = $1`
-	row := repo.DbConnection.DB.QueryRowContext(ctx, query, id)
+func (repo *UserRepository) GetUserById(ctx context.Context, id string) (*domain.User, error) {
+	query := `
+		SELECT
+			user_id AS id,
+			email,
+			password,
+			name,
+			surname,
+			role,
+			created_at,
+			is_active
+		FROM dco.users
+		WHERE user_id = $1`
 
 	var user domain.User
-
-	if err := row.Scan(&user.ID, &user.Email, &user.Password, &user.IsActive); err != nil {
+	err := repo.DbConnection.DB.QueryRowContext(ctx, query, id).Scan(
+		&user.ID,
+		&user.Email,
+		&user.Password,
+		&user.Name,
+		&user.Surname,
+		&user.Role,
+		&user.CreatedAt,
+		&user.IsActive,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, err
+		}
 		return nil, err
 	}
+
 	return &user, nil
+}
+
+func (repo *UserRepository) DeleteUserById(ctx context.Context, id string) error {
+	query := `DELETE FROM dco.users WHERE user_id = $1`
+
+	result, err := repo.DbConnection.DB.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
+}
+
+func (repo *UserRepository) UpdateUserById(ctx context.Context, user *domain.User) (*domain.User, error) {
+	query := `
+		UPDATE dco.users
+		SET 
+			email = $2,
+			password = $3,
+			name = $4,
+			surname = $5,
+			role = $6,
+			is_active = $7,
+			updated_at = NOW()
+		WHERE user_id = $1
+		RETURNING
+			user_id AS id,
+			email,
+			password,
+			name,
+			surname,
+			role,
+			created_at,
+			is_active`
+
+	err := repo.DbConnection.DB.QueryRowContext(
+		ctx,
+		query,
+		user.ID,
+		user.Email,
+		[]byte(user.Password),
+		user.Name,
+		user.Surname,
+		user.Role,
+		user.IsActive,
+	).Scan(
+		&user.ID,
+		&user.Email,
+		&user.Password,
+		&user.Name,
+		&user.Surname,
+		&user.Role,
+		&user.CreatedAt,
+		&user.IsActive,
+	)
+	if err != nil {
+		return nil, err // вернёт sql.ErrNoRows, если пользователь не найден
+	}
+
+	return user, nil
 }

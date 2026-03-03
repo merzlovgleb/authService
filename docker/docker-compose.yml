@@ -1,4 +1,73 @@
-include:
-  - ./docker-compose.network.yaml
-  - cache/docker-compose.yml
-  - db/docker-compose.yml
+##  include:
+##  - ./docker-compose.network.yaml
+##  - cache/docker-compose.yml
+##  - db/docker-compose.yml
+#
+#services:
+#  # 1. Redis
+#  redis:
+#    image: redis:7-alpine
+#    container_name: dco-redis
+#    ports:
+#      - "6379:6379"
+#    networks:
+#      - dco-network
+#    healthcheck:
+#      test: [ "CMD", "redis-cli", "ping" ]
+#      interval: 5s
+#      timeout: 5s
+#      retries: 5
+#
+#  # 2. PostgreSQL (имя хоста совпадает с вашим yaml-конфигом)
+#  dco-postgres:
+#    image: postgres:17-alpine
+#    container_name: dco-postgres-go
+#    environment:
+#      POSTGRES_DB: dco_db
+#      POSTGRES_USER: dco_user
+#      POSTGRES_PASSWORD: dco_password
+#    ports:
+#      - "5432:5432"
+#    networks:
+#      - dco-network
+#    healthcheck:
+#      test: ["CMD-SHELL", "pg_isready -U dco_user -d dco_db"]
+#      interval: 5s
+#      timeout: 5s
+#      retries: 5
+#
+#  # 3. САМО GO-ПРИЛОЖЕНИЕ (Auth Service)
+#  auth-app:
+#    build:
+#      context: ../            # Корень проекта (где папка cmd)
+#      dockerfile: docker/Dockerfile # Путь к вашему файлу из корня
+#    container_name: go-service # Это имя будет искать Kotlin
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      dco-postgres:
+#        condition: service_healthy
+#      redis:
+#        condition: service_healthy
+#    networks:
+#      - dco-network
+#
+#  # 4. Миграции
+#  goose-migrate:
+#    image: ghcr.io/kukymbr/goose-docker:3.24.3
+#    container_name: dco-goose-migrate
+#    environment:
+#      - GOOSE_DRIVER=postgres
+#      - GOOSE_DBSTRING=host=dco-postgres port=5432 user=dco_user password=dco_password dbname=dco_db sslmode=disable
+#    volumes:
+#      - ../../migrations:/migrations # Убедитесь, что путь к папке migrations верный
+#    depends_on:
+#      dco-postgres:
+#        condition: service_healthy
+#    networks:
+#      - dco-network
+#
+#networks:
+#  dco-network:
+#    external: true
+#    name: my-shared-apps

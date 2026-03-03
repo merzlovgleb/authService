@@ -22,5 +22,8 @@ func (userRouter *UserRouter) RegisterRoutes(routerUser *gin.RouterGroup) {
 	userHandler := user.NewUserHandler(userRouter.DbConnection)
 
 	userGroup.POST("/", userHandler.CreateUser)
+	userGroup.DELETE("/", userHandler.DeleteUserById)
 	userGroup.GET("/", userHandler.FindAll)
+	userGroup.PUT("/", userHandler.UpdateUserById)
+	userGroup.GET("/:id", userHandler.GetUserById)
 }

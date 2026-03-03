@@ -36,4 +36,5 @@ func main() {
 		logging.Error(ctx, "Failed to start server: %v", err.Error())
 		log.Fatalf("Server error: %v", err)
 	}
+
 }

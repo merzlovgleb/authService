@@ -1,19 +1,40 @@
+#server:
+#  http_port: ":8080"
+#  token: "supersecrettoken"
+#  read_time_out: 5
+#  write_time_out: 5
+#
+#db:
+#  host: "dco-postgres"
+#  port: "5432"
+#  db_name: "dco_db"
+#  login: "dco_user"
+#  password: "dco_password"
+#  max_pool_connections: 10
+#
+#cache:
+#  redis_addr: "redis:6379"
+#
+#stage:
+#  is_dev: true
+#  log_file_path: ./logs.txt
+
 server:
   http_port: ":8080"
-  token: "supersecrettoken"
+  token: "change-me"
   read_time_out: 5
   write_time_out: 5
 
 db:
-  host: "localhost"
-  port: "5432"
-  db_name: "dco_db"
-  login: "dco_user"
-  password: "dco_password"
+  host: auth-postgres
+  port: 5432
+  db_name: dco_db
+  user: dco_user
+  password: dco_password
   max_pool_connections: 10
 
 cache:
-  redis_addr: "redis:6379"
+  redis_addr: auth-redis:6379
 
 stage:
   is_dev: true

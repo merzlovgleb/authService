@@ -17,7 +17,7 @@ func CreateConnectionString(cfg *config.Config) string {
 	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		cfg.DB.Host,
 		cfg.DB.Port,
-		cfg.DB.Login,
+		cfg.DB.User,
 		cfg.DB.Password,
 		cfg.DB.DbName,
 	)

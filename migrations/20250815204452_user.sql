@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 CREATE SCHEMA IF NOT EXISTS dco;
 
-CREATE TABLE dco.users (
+CREATE TABLE IF NOT EXISTS dco.users (
                            user_id    UUID PRIMARY KEY,
                            email      TEXT NOT NULL UNIQUE,
                            password   BYTEA NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE dco.users (
                            is_active  BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-CREATE INDEX idx_users_email ON dco.users(email);
+CREATE INDEX IF NOT EXISTS idx_users_email ON dco.users(email);
 -- +goose StatementEnd
 
 -- +goose Down

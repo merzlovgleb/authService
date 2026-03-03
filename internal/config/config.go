@@ -1,6 +1,11 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"fmt"
+	"github.com/spf13/viper"
+	"os"
+	"strings"
+)
 
 type ServerConfig struct {
 	HTTPPort     string `mapstructure:"http_port"`
@@ -12,7 +17,7 @@ type ServerConfig struct {
 type DBConfig struct {
 	Host               string `mapstructure:"host"`
 	Port               int    `mapstructure:"port"`
-	Login              string `mapstructure:"login"`
+	User               string `mapstructure:"user"`
 	Password           string `mapstructure:"password"`
 	DbName             string `mapstructure:"db_name"`
 	MaxPoolConnections int    `mapstructure:"max_pool_connections"`
@@ -34,17 +39,43 @@ type Config struct {
 	Stage  Stage        `mapstructure:"stage"`
 }
 
+//func Load() (*Config, error) {
+//	viper.SetConfigName("config")
+//	viper.SetConfigType("yaml")
+//	viper.AddConfigPath(".")
+//	viper.AutomaticEnv()
+//	if err := viper.ReadInConfig(); err != nil {
+//		return nil, err
+//	}
+//	var cfg Config
+//	if err := viper.Unmarshal(&cfg); err != nil {
+//		return nil, err
+//	}
+//	return &cfg, nil
+//}
+
 func Load() (*Config, error) {
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-	viper.AutomaticEnv()
-	if err := viper.ReadInConfig(); err != nil {
-		return nil, err
+	v := viper.New()
+
+	if configPath := os.Getenv("CONFIG_PATH"); configPath != "" {
+		v.SetConfigFile(configPath)
+	} else {
+		v.SetConfigName("config")
+		v.SetConfigType("yaml")
+		v.AddConfigPath(".")
 	}
+
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	v.AutomaticEnv()
+
+	if err := v.ReadInConfig(); err != nil {
+		return nil, fmt.Errorf("read config: %w", err)
+	}
+
 	var cfg Config
-	if err := viper.Unmarshal(&cfg); err != nil {
-		return nil, err
+	if err := v.Unmarshal(&cfg); err != nil {
+		return nil, fmt.Errorf("unmarshal config: %w", err)
 	}
+
 	return &cfg, nil
 }

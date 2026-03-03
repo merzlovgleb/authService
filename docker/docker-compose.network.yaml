@@ -1,4 +1,6 @@
-version: '3.8'
-
-networks:
-  dco-network:
+#version: '3.8'
+#
+#networks:
+#  dco-network:
+#    external: true
+#    name: my-shared-apps

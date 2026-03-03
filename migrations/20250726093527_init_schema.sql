@@ -2,9 +2,9 @@
 -- +goose StatementBegin
 SELECT 'up SQL query';
 -- +goose StatementEnd
-CREATE SCHEMA dco;
+CREATE SCHEMA if not exists dco;
 
-CREATE TABLE dco.segments
+CREATE TABLE if not exists dco.segments
 (
     group_id uuid    NOT NULL,
     id       uuid    NOT NULL,
@@ -13,23 +13,28 @@ CREATE TABLE dco.segments
     PRIMARY KEY (id)
 );
 
-CREATE TABLE dco.clients_segments
+CREATE TABLE if not exists dco.clients_segments
 (
     client_id  uuid NOT NULL,
     segment_id uuid NOT NULL,
     PRIMARY KEY (client_id, segment_id)
 );
 
-CREATE TABLE dco.groups
+CREATE TABLE if not exists dco.groups
 (
     id    uuid NOT NULL,
     title text NOT NULL,
     PRIMARY KEY (id)
 );
 -- Indexes
-CREATE INDEX groups_idx_title ON dco.groups using hash (title);
+CREATE INDEX if not exists groups_idx_title ON dco.groups using hash (title);
 
 -- +goose Down
+
+DROP INDEX IF EXISTS dco.groups_idx_title;
+DROP TABLE IF EXISTS dco.groups;
+DROP TABLE IF EXISTS dco.clients_segments;
+DROP TABLE IF EXISTS dco.segments;
 -- +goose StatementBegin
 SELECT 'down SQL query';
 -- +goose StatementEnd
