@@ -18,10 +18,10 @@ func NewGroupService(repository *repository.GroupRepository) *GroupService {
 	}
 }
 
-func (groupService *GroupService) CreateGroup(ctx context.Context, groupDto dto.CreateGroupDto) {
-	groupService.Repository.CreateGroup(ctx, groupDto.Name)
+func (groupService *GroupService) CreateGroup(ctx context.Context, groupDto dto.CreateGroupDto) error {
+	return groupService.Repository.CreateGroup(ctx, groupDto.Name)
 }
 
-func (groupService *GroupService) GetAll(ctx *gin.Context) []domain.Group {
+func (groupService *GroupService) GetAll(ctx *gin.Context) ([]domain.Group, error) {
 	return groupService.Repository.GetAll(ctx)
 }

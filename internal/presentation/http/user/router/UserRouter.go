@@ -23,4 +23,5 @@ func (userRouter *UserRouter) RegisterRoutes(routerUser *gin.RouterGroup) {
 
 	userGroup.POST("/", userHandler.CreateUser)
 	userGroup.GET("/", userHandler.FindAll)
+	userGroup.GET("/:id", userHandler.GetById)
 }

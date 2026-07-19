@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/itpark/market/auth/internal/config/db"
 	"github.com/itpark/market/auth/internal/presentation/http/group/router"
+	userRouter "github.com/itpark/market/auth/internal/presentation/http/user/router"
 )
 
 func RegisterRoutes(engine *gin.Engine, db *db.DbConnection) *gin.Engine {
@@ -14,8 +15,10 @@ func RegisterRoutes(engine *gin.Engine, db *db.DbConnection) *gin.Engine {
 	}
 
 	groupRouter := router.NewGroupRouter(db)
-
 	groupRouter.RegisterRoutes(api)
+
+	newUserRouter := userRouter.NewUserRouter(db)
+	newUserRouter.RegisterRoutes(api)
 
 	return engine
 }

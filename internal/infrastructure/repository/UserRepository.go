@@ -22,29 +22,29 @@ func NewUserRepository(dbConnection *db.DbConnection) *UserRepository {
 
 func (repo *UserRepository) CreateUser(ctx context.Context, user *domain.User) (uuid.UUID, error) {
 	query := `
-		INSERT INTO dco.users (id,email,password,name,surname) VALUES ($1,$2,$3,$4)`
+		INSERT INTO dco.users (user_id,email,password,name,surname) VALUES ($1,$2,$3,$4,$5)`
 
-	res, err := repo.DbConnection.DB.ExecContext(ctx, query, user.ID, user.Email, user.Password, user.Name, user.Surname)
+	res, err := repo.DbConnection.DB.ExecContext(ctx, query, user.ID, user.Email, []byte(user.Password), user.Name, user.Surname)
 	if err != nil {
-		logging.Error(err.Error())
+		logging.Warn(err.Error())
+		return uuid.Nil, err
 	}
 	rowsAffected, _ := res.RowsAffected()
 	logging.Debug(fmt.Sprintf("Created %d rows", rowsAffected))
 	return user.ID, nil
 }
 
-func (repo *UserRepository) GetAllUsers(ctx context.Context) []domain.User {
+func (repo *UserRepository) GetAllUsers(ctx context.Context) ([]domain.User, error) {
 	var users []domain.User
-	err := repo.DbConnection.DB.SelectContext(ctx, &users, "SELECT id, title from dco.users")
+	err := repo.DbConnection.DB.SelectContext(ctx, &users, "SELECT user_id, email, name, surname, role FROM dco.users")
 	if err != nil {
-		logging.Error(nil, err.Error())
-		//panic(err)
-		return nil
+		logging.Warn(err.Error())
+		return nil, err
 	}
-	return users
+	return users, nil
 }
 func (repo *UserRepository) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
-	query := `SELECT id, email, password, is_active FROM users WHERE email = $1`
+	query := `SELECT user_id, email, password, is_active FROM dco.users WHERE email = $1`
 	row := repo.DbConnection.DB.QueryRowContext(ctx, query, email)
 
 	var user domain.User
@@ -57,7 +57,7 @@ func (repo *UserRepository) GetUserByEmail(ctx context.Context, email string) (*
 }
 
 func (repo *UserRepository) GetUserById(ctx *gin.Context, id string) (*domain.User, error) {
-	query := `SELECT id, email, password, is_active FROM users WHERE id = $1`
+	query := `SELECT user_id, email, password, is_active FROM dco.users WHERE user_id = $1`
 	row := repo.DbConnection.DB.QueryRowContext(ctx, query, id)
 
 	var user domain.User

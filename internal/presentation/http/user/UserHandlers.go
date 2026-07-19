@@ -39,7 +39,21 @@ func (h *UserHandler) CreateUser(ctx *gin.Context) {
 	ctx.Status(http.StatusCreated)
 }
 
+func (h *UserHandler) GetById(ctx *gin.Context) {
+	id := ctx.Param("id")
+	user, err := h.Service.GetUserById(ctx, id)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, customErrors.CreateError("User not found", err))
+		return
+	}
+	ctx.JSON(http.StatusOK, user)
+}
+
 func (h *UserHandler) FindAll(ctx *gin.Context) {
-	users := h.Service.GetAllUsers(ctx)
+	users, err := h.Service.GetAllUsers(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, customErrors.CreateError("Failed to fetch users", err))
+		return
+	}
 	ctx.JSON(http.StatusOK, users)
 }

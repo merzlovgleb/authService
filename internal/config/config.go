@@ -12,7 +12,7 @@ type ServerConfig struct {
 type DBConfig struct {
 	Host               string `mapstructure:"host"`
 	Port               int    `mapstructure:"port"`
-	Login              string `mapstructure:"login"`
+	Login              string `mapstructure:"user"`
 	Password           string `mapstructure:"password"`
 	DbName             string `mapstructure:"db_name"`
 	MaxPoolConnections int    `mapstructure:"max_pool_connections"`

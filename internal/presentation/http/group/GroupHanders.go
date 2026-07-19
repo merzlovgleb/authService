@@ -30,11 +30,19 @@ func (g *Handler) CreateGroup(ctx *gin.Context) {
 		return
 	}
 
-	g.Service.CreateGroup(ctx, groupDto)
+	if err := g.Service.CreateGroup(ctx, groupDto); err != nil {
+		ctx.JSON(http.StatusInternalServerError, customErrors.CreateError("Failed to create group", err))
+		return
+	}
 
 	ctx.Status(http.StatusCreated)
 }
 
 func (g *Handler) FindAll(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, g.Service.GetAll(ctx))
+	groups, err := g.Service.GetAll(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, customErrors.CreateError("Failed to fetch groups", err))
+		return
+	}
+	ctx.JSON(http.StatusOK, groups)
 }
